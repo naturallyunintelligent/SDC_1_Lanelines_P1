@@ -42,22 +42,18 @@ If you'd like to include images to show how the pipeline works, here is how to i
 ### 2. Identify potential shortcomings with your current pipeline
 
 
-One potential shortcoming would be what would happen when ... 
+Potential shortcoming would be what would happen when ... 
 
 extreme corner to left or right, causing lines to be outside of ROI
 Different lighting or shadowy conditions could mean lines aren't found in the canny edges step
 Ditto for road surface: wet, snow, changing tarmac to concrete etc
 no line markings present on road surface
 
-Another shortcoming could be ...
-
 
 ### 3. Suggest possible improvements to your pipeline
 
-A possible improvement would be to ...
+A possible improvement would be to deal with any of the above shortcomings, for example:
 adjust for lighting conditions
-adjust road surace
-adjust ROI
-
-
-Another potential improvement could be to ...
+adjust for changes in road surace
+adjust ROI when the horizon is changing
+deal with roads that aren't straight (i.e. extrapolate to curves rather than straight lines)
