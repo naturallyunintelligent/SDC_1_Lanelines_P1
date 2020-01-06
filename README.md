@@ -1,56 +1,95 @@
 # **Finding Lane Lines on the Road** 
-[![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
-
-<img src="examples/laneLines_thirdPass.jpg" width="480" alt="Combined Image" />
-
-Overview
 ---
 
-When we drive, we use our eyes to decide where to go.  The lines on the road that show us where the lanes are act as our constant reference for where to steer the vehicle.  Naturally, one of the first things we would like to do in developing a self-driving car is to automatically detect lane lines using an algorithm.
+**Finding Lane Lines on the Road**
 
-In this project you will detect lane lines in images using Python and OpenCV.  OpenCV means "Open-Source Computer Vision", which is a package that has many useful tools for analyzing images.  
+The goals / steps of this project are the following:
+* Make a pipeline that finds lane lines on the road
+* Reflect on your work in a written report
 
-To complete the project, two files will be submitted: a file containing project code and a file containing a brief write up explaining your solution. We have included template files to be used both for the [code](https://github.com/udacity/CarND-LaneLines-P1/blob/master/P1.ipynb) and the [writeup](https://github.com/udacity/CarND-LaneLines-P1/blob/master/writeup_template.md).The code file is called P1.ipynb and the writeup template is writeup_template.md 
-
-To meet specifications in the project, take a look at the requirements in the [project rubric](https://review.udacity.com/#!/rubrics/322/view)
-
-
-Creating a Great Writeup
----
-For this project, a great writeup should provide a detailed response to the "Reflection" section of the [project rubric](https://review.udacity.com/#!/rubrics/322/view). There are three parts to the reflection:
-
-1. Describe the pipeline
-
-2. Identify any shortcomings
-
-3. Suggest possible improvements
-
-We encourage using images in your writeup to demonstrate how your pipeline works.  
-
-All that said, please be concise!  We're not looking for you to write a book here: just a brief description.
-
-You're not required to use markdown for your writeup.  If you use another method please just submit a pdf of your writeup. Here is a link to a [writeup template file](https://github.com/udacity/CarND-LaneLines-P1/blob/master/writeup_template.md). 
-
-
-The Project
 ---
 
-## If you have already installed the [CarND Term1 Starter Kit](https://github.com/udacity/CarND-Term1-Starter-Kit/blob/master/README.md) you should be good to go!   If not, you should install the starter kit to get started on this project. ##
+### Reflection
 
-**Step 1:** Set up the [CarND Term1 Starter Kit](https://github.com/udacity/CarND-Term1-Starter-Kit/blob/master/README.md) if you haven't already.
+### 1. Describe your pipeline. As part of the description, explain how you modified the draw_lines() function.
 
-**Step 2:** Open the code in a Jupyter Notebook
+My pipeline consisted of 5 steps.
 
-You will complete the project code in a Jupyter notebook.  If you are unfamiliar with Jupyter Notebooks, check out [Udacity's free course on Anaconda and Jupyter Notebooks](https://classroom.udacity.com/courses/ud1111) to get started.
+1) Convert the images to grayscale: <br/>
+    `gray = grayscale(image)`<br/>
+    
+    [//]: # (Image References)
+    [image1]: ./outputs/gray_output.jpg "gray"
+    ![alt text][image1]
 
-Jupyter is an Ipython notebook where you can run blocks of code and see results interactively.  All the code for this project is contained in a Jupyter notebook. To start Jupyter in your browser, use terminal to navigate to your project directory and then run the following command at the terminal prompt (be sure you've activated your Python 3 carnd-term1 environment as described in the [CarND Term1 Starter Kit](https://github.com/udacity/CarND-Term1-Starter-Kit/blob/master/README.md) installation instructions!):
+2) Blur the gray image: <br/>
+    `kernel_size = 15` <br/>
+    `blur_gray = gaussian_blur(gray, kernel_size)`
+    
+    [//]: # (Image References)
+    [image2]: ./outputs/blur_output.jpg "blur"
+    ![alt text][image2]
 
-`> jupyter notebook`
+3) Detect edges using the opencv canny function: <br/>
+    `low_threshold = 75` <br/>
+    `high_threshold = 90` <br/>
+    `edges = canny(blur_gray, low_threshold, high_threshold)`
+    
+    [//]: # (Image References)
+    [image3]: ./outputs/edges_output.jpg "canny edges"
+    ![alt text][image3]
+    
+4) Mask a ROI, using some chosen vertices: <br/>
+    `vertices = np.array([[(0,image.shape[0]),(image.shape[1]/2,image.shape[0]/1.7), (image.shape[1]/2, image.shape[0]/1.7), (image.shape[1],image.shape[0])]], dtype=np.int32)` <br/>
+    `masked = region_of_interest(edges, vertices)`
+    
+    [//]: # (Image References)
+    [image4]: ./outputs/masked_output.jpg "masked"
+    ![alt text][image4]
+    
+5) Convert edges to lines using hough space: <br/>
+    `lines = hough_lines(masked, rho, theta, threshold, min_line_len, max_line_gap)`
+    
+    [//]: # (Image References)
+    [image5]: ./outputs/lines_output.jpg "lines"
+    ![alt text][image5]
+    
+6) Average the lines and extrapolate: <br/>
+    In order to draw a single line on the left and right lanes, I modified the draw_lines() function to:<br/>
+     - Calculate the gradient of each individual line identified<br/>
+     - Group positive and negative lines together<br/>
+     - Create arrays of line gradient, y-intercept and equivalent intercept at the frame of the picture<br/>
+     - Calculate the mean of the gradients and intercepts to calculate a single start point and end point to draw a straight line over each detected lane lines.
+  
+    [//]: # (Image References)
+    [image5]: ./outputs/lines_output.jpg "lines"
+    ![alt text][image5]
+    
+    [//]: # (Image References)
+    [image6]: ./outputs/weighty_output.jpg "lines"
+    ![alt text][image6] 
 
-A browser window will appear showing the contents of the current directory.  Click on the file called "P1.ipynb".  Another browser window will appear displaying the notebook.  Follow the instructions in the notebook to complete the project.  
 
-**Step 3:** Complete the project and submit both the Ipython notebook and the project writeup
 
-## How to write a README
-A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
+### 2. Identify potential shortcomings with your current pipeline
 
+A clear shortcoming is my "beginnerish" code in the modified draw lines function which I'm certain could be written more efficiently.
+
+The challenge video demonstrates an issue right now where the lines plot in crazy positions, despite working on the other videos, so there is some debugging to do there!
+
+Other potential shortcomings would be what would happen if/when ... 
+
+ - Extreme corner to left or right, causing lines to be outside of ROI
+ - Different lighting or shadowy conditions could mean lines aren't found in the canny edges step
+ - Ditto for road surface: wet, snow, changing tarmac to concrete etc
+ - No line markings present on road surface
+
+
+### 3. Suggest possible improvements to your pipeline
+
+A possible improvement would be to deal with any of the above shortcomings, for example:
+ - Refactor the code in the draw lines function
+ - Adjust for lighting conditions
+ - Adjust for changes in road surface
+ - Adjust ROI when the horizon is changing
+ - Deal with roads that aren't straight (i.e. extrapolate to curves rather than straight lines)
